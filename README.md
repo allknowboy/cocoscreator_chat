@@ -1,0 +1,2 @@
+# cocoscreator_chat
+使用CocosCreator和Socket.io开发的聊天室
