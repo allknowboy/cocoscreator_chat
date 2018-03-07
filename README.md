@@ -2,7 +2,7 @@
 使用CocosCreator和Socket.io开发的聊天室
 
 ## 文档地址:  
-[allknowboy.com/posts/f815bc54/](allknowboy.com/posts/f815bc54/);
+[http://allknowboy.com/posts/f815bc54/](http://allknowboy.com/posts/f815bc54/)
 
 ## 进入chat_server运行如下命令
 
