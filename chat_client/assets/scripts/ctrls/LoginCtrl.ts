@@ -10,6 +10,7 @@ export default class LoginCtrl extends cc.Component {
 
     @property(cc.Label) label: cc.Label = null;
     @property(cc.EditBox) userBox: cc.EditBox = null;
+    @property(cc.EditBox) channelBox: cc.EditBox = null;
 
 
     login(){
@@ -17,7 +18,13 @@ export default class LoginCtrl extends cc.Component {
         if(name.length<2){
             return;
         }
-        let user:User ={id:"",name,imgUrl:""};
+
+        let channel = this.channelBox.string;
+        if(channel.length<2){
+            return;
+        }
+
+        let user:User ={id:"",name,imgUrl:"",channel};
         NetUtil.Instance.emit('login',user);
     }
 

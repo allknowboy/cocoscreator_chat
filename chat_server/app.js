@@ -26,7 +26,7 @@ http.listen(3000, ()=>{
 
 /**********************关于聊天的相关操作*************************/
 //保存用户的数组
-var userList = [];
+var userList = {};
 //接收客户端的连接
 sio.on('connection',socket=>{
     //登录    
@@ -34,31 +34,49 @@ sio.on('connection',socket=>{
         console.log('login');
         console.log(user);
         user.id = socket.id;
-        userList.push(user);
+        if(!userList[user.channel]){
+            userList[user.channel]=[];
+        }
+        userList[user.channel].push(user);
+        socket.join(user.channel);
+        socket.channel = user.channel;
         //群发用户列表
-        sio.emit('userList',userList);
+        sio.to(user.channel).emit('userList',userList[user.channel]);
         //发送当前用户列表信息
         socket.emit('userInfo',user);
         //除自己外广播用户登录信息
-        socket.broadcast.emit('loginInfo',user.name+"上线了。");
+        socket.broadcast.to(user.channel).emit('loginInfo',user.name+"上线了。");
     });
     //客户端断开
     socket.on('disconnect',()=>{
         //查出当前离开的用户
-        let user = _.findWhere(userList,{id:socket.id});
-        if(user){
-            //剔除当前离线用户
-			userList = _.without(userList,user);
-            //发送当前用户列表信息
-			sio.emit('userList',userList);
-			//除自己外广播用户断线信息
-			socket.broadcast.emit('loginInfo',user.name+"下线了。");
+        //console.log(socket.channel);
+        if(socket.channel){
+            socket.leave(socket.channel,()=>{
+                //用户离开频道的回调
+            })
         }
 
+        let user = _.findWhere(userList[socket.channel],{id:socket.id});
+        if(user){
+            //剔除当前离线用户
+			userList[socket.channel] = _.without(userList[socket.channel],user);
+            //发送当前用户列表信息
+			sio.to(socket.channel).emit('userList',userList[socket.channel]);
+			//除自己外广播用户断线信息
+            socket.broadcast.to(user.channel).emit('loginInfo',user.name+"下线了。");
+            
+            //删除当前的频道
+            if(userList[socket.channel].length==0){
+                delete userList[socket.channel];
+                delete socket.channel;
+            }
+        }
     });
     //群发事件
     socket.on('toAll',function(msgObj){
-		socket.broadcast.emit('toAll',msgObj);
+        console.log(`++++++++++++++${msgObj.from.channel}+++++++++++++++`);
+		socket.broadcast.to(msgObj.from.channel).emit('toAll',msgObj);
     });
     //单发事件
 	socket.on('toOne',function(msgObj){

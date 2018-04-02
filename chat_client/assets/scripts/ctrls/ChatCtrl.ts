@@ -22,6 +22,8 @@ export default class ChatCtrl extends cc.Component {
 
     @property(cc.Node) singleBox:cc.Node = null;
 
+    @property(cc.Label) userInfoLabel:cc.Label = null;
+
     userList:Array<User> = [];
 
     singleUser:User = null;
@@ -37,6 +39,8 @@ export default class ChatCtrl extends cc.Component {
         NetUtil.Instance.on('userInfo',(user:User)=>{
             GameUtil.Instance.userInfo = user;
             cc.log(user);
+            this.userInfoLabel.string = `当前用户是：${user.name}  当前所处的频道是:${user.channel}`
+
         })
         //广播的用户列表信息
         NetUtil.Instance.on('userList',(userList)=>{
