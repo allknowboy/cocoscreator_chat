@@ -1,6 +1,7 @@
 export interface User{
     id:string; //用户的id
     name:string; //用户名
+    password:string; //密码
     channel:string; //当前的频道
     imgUrl:string; //用户头像的图片地址 
 }

@@ -9,8 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/sequelize": "^4.27.12",
     "express": "^4.16.2",
+    "sequelize": "^4.37.5",
     "socket.io": "^2.0.4",
+    "sqlite3": "^4.0.0",
     "underscore": "^1.8.3"
   }
 }

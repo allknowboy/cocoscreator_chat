@@ -4,6 +4,9 @@ const http = require('http').Server(app);
 const sio = require('socket.io')(http);
 const _ = require('underscore');
 
+const User = require('./models/User');
+const Message = require('./models/Message');
+
 //设置跨域访问
 app.all('*', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -29,10 +32,45 @@ http.listen(3000, ()=>{
 var userList = {};
 //接收客户端的连接
 sio.on('connection',socket=>{
+    //注册
+    socket.on('register',registerObj=>{
+        User.findOrCreate({where: {account: registerObj.name}, defaults: {password:registerObj.password}})
+        .spread((user, created) => {
+            // console.log(user.get({
+            //     plain: true
+            // }))
+            // console.log(created)
+            socket.uid = user.get('uid');
+            if(created){
+                //发送当前用户列表信息
+                socket.emit('registerInfo','注册成功');
+            }
+            else{
+                //发送当前用户列表信息
+                socket.emit('registerInfo','用户名已经存在');
+            }
+        })
+    });
+
+
+
     //登录    
     socket.on('login',(user)=>{
         console.log('login');
         console.log(user);
+
+        User.findOne({where: {account: user.name,password:user.password}}).then(user=>{
+            console.log(user);
+            if(user){
+                socket.uid = user.get('uid');
+            }
+            else{
+                //发送当前用户列表信息
+                socket.emit('loginInfo','登录失败');
+                return;
+            }
+        });
+
         user.id = socket.id;
         if(!userList[user.channel]){
             userList[user.channel]=[];
@@ -75,6 +113,13 @@ sio.on('connection',socket=>{
     });
     //群发事件
     socket.on('toAll',function(msgObj){
+        Message.create({
+            fromuid:socket.uid,
+            message:msgObj.msg,
+        }).then(value=>{
+            console.log(`插入数据 ${value}`);
+        });
+
         console.log(`++++++++++++++${msgObj.from.channel}+++++++++++++++`);
 		socket.broadcast.to(msgObj.from.channel).emit('toAll',msgObj);
     });
